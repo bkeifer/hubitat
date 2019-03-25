@@ -1,0 +1,404 @@
+[
+    {
+        "id": "7e0e5628.08e328",
+        "type": "tab",
+        "label": "Hubitat Performance Monitoring",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "b20a59e1.a9eb48",
+        "type": "inject",
+        "z": "7e0e5628.08e328",
+        "name": "5 Minutes",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 128,
+        "y": 160,
+        "wires": [
+            [
+                "897fec57.a299c"
+            ]
+        ]
+    },
+    {
+        "id": "991b1b0a.7868d8",
+        "type": "http request",
+        "z": "7e0e5628.08e328",
+        "name": "Get App List",
+        "method": "GET",
+        "ret": "bin",
+        "paytoqs": false,
+        "url": "http://hub-ip-address/installedapp/list",
+        "tls": "",
+        "proxy": "",
+        "authType": "basic",
+        "x": 328.5,
+        "y": 161,
+        "wires": [
+            [
+                "3bf2ab00.3e0496"
+            ]
+        ]
+    },
+    {
+        "id": "3bf2ab00.3e0496",
+        "type": "change",
+        "z": "7e0e5628.08e328",
+        "name": "Stamp",
+        "rules": [
+            {
+                "t": "set",
+                "p": "endtime",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 362.5,
+        "y": 204,
+        "wires": [
+            [
+                "bfa2a61a.9fd0f8"
+            ]
+        ]
+    },
+    {
+        "id": "897fec57.a299c",
+        "type": "change",
+        "z": "7e0e5628.08e328",
+        "name": "Stamp",
+        "rules": [
+            {
+                "t": "set",
+                "p": "starttime",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 302.5,
+        "y": 118,
+        "wires": [
+            [
+                "991b1b0a.7868d8"
+            ]
+        ]
+    },
+    {
+        "id": "bfa2a61a.9fd0f8",
+        "type": "function",
+        "z": "7e0e5628.08e328",
+        "name": "Stamp Math",
+        "func": "msg.totaltime = msg.endtime - msg.starttime;\nmsg.totaltime = msg.totaltime / 1000\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 532.5,
+        "y": 161,
+        "wires": [
+            [
+                "d040b3cd.6b84d",
+                "4133b019.14e98"
+            ]
+        ]
+    },
+    {
+        "id": "d040b3cd.6b84d",
+        "type": "function",
+        "z": "7e0e5628.08e328",
+        "name": "INSERT",
+        "func": "var query = \"INSERT INTO responsetimes(deviceId, displayName, `value`) VALUES(\";\nquery += \"1,\";\nquery += \"'Hubitat Elevation Hub',\";\nquery += \"'\" + msg.totaltime + \"'\";\nquery += \")\";\n\nmsg.topic = query;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 740.5,
+        "y": 161,
+        "wires": [
+            [
+                "9d582be5.d6bbb8"
+            ]
+        ]
+    },
+    {
+        "id": "9d582be5.d6bbb8",
+        "type": "mysql",
+        "z": "7e0e5628.08e328",
+        "mydb": "258e1d5a.b26f12",
+        "name": "Logging DB",
+        "x": 912,
+        "y": 161,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4133b019.14e98",
+        "type": "switch",
+        "z": "7e0e5628.08e328",
+        "name": "Response Time",
+        "property": "totaltime",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "lt",
+                "v": "5",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "30",
+                "vt": "str"
+            },
+            {
+                "t": "gte",
+                "v": "30",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 252.5,
+        "y": 371,
+        "wires": [
+            [
+                "d51fb602.3e1d88"
+            ],
+            [
+                "957065aa.fe91b8"
+            ],
+            [
+                "59fdce33.ca7d4"
+            ]
+        ]
+    },
+    {
+        "id": "9525f293.06e8a",
+        "type": "http request",
+        "z": "7e0e5628.08e328",
+        "name": "Reboot Hub",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": false,
+        "url": "http://hub-ip-address/hub/reboot",
+        "tls": "",
+        "proxy": "",
+        "authType": "basic",
+        "x": 758.5,
+        "y": 433,
+        "wires": [
+            [
+                "af50aeaa.6ffdd"
+            ]
+        ]
+    },
+    {
+        "id": "d51fb602.3e1d88",
+        "type": "change",
+        "z": "7e0e5628.08e328",
+        "name": "0 - 5 Seconds",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALL CLEAR!  Response time less than 5 seconds.",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 447.5,
+        "y": 309,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "957065aa.fe91b8",
+        "type": "change",
+        "z": "7e0e5628.08e328",
+        "name": "5 - 30 Seconds",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "WARNING!  Response time between 10 and 30 seconds!",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 448,
+        "y": 371,
+        "wires": [
+            [
+                "af50aeaa.6ffdd"
+            ]
+        ]
+    },
+    {
+        "id": "59fdce33.ca7d4",
+        "type": "change",
+        "z": "7e0e5628.08e328",
+        "name": "30+ Seconds",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CRITICAL!  Response time greater than 30 seconds!",
+                "tot": "str"
+            },
+            {
+                "t": "delete",
+                "p": "",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 433,
+        "wires": [
+            [
+                "a3a2bade.bb4b68"
+            ]
+        ]
+    },
+    {
+        "id": "a3a2bade.bb4b68",
+        "type": "delay",
+        "z": "7e0e5628.08e328",
+        "name": "1x/Hour",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "hour",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 598.5,
+        "y": 433,
+        "wires": [
+            [
+                "9525f293.06e8a"
+            ]
+        ]
+    },
+    {
+        "id": "af50aeaa.6ffdd",
+        "type": "time-range-switch",
+        "z": "7e0e5628.08e328",
+        "name": "Am I Awake?",
+        "lat": "40.4966539",
+        "lon": "-75.4408193",
+        "startTime": "08:00",
+        "endTime": "23:00",
+        "startOffset": 0,
+        "endOffset": 0,
+        "x": 844.5,
+        "y": 371,
+        "wires": [
+            [
+                "757f97ae.c7ecc8"
+            ],
+            [
+                "3a081885.52d208"
+            ]
+        ]
+    },
+    {
+        "id": "d31de04.7a6662",
+        "type": "pushover api",
+        "z": "7e0e5628.08e328",
+        "keys": "",
+        "title": "Hubitat Watchdog",
+        "name": "Send Pushover Alert",
+        "x": 1263.5,
+        "y": 370,
+        "wires": []
+    },
+    {
+        "id": "757f97ae.c7ecc8",
+        "type": "delay",
+        "z": "7e0e5628.08e328",
+        "name": "YES: 1x/Hour",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "hour",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 1036.5,
+        "y": 352,
+        "wires": [
+            [
+                "d31de04.7a6662"
+            ]
+        ]
+    },
+    {
+        "id": "3a081885.52d208",
+        "type": "delay",
+        "z": "7e0e5628.08e328",
+        "name": "NO: Only Once",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "day",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 1036.5,
+        "y": 391,
+        "wires": [
+            [
+                "d31de04.7a6662"
+            ]
+        ]
+    },
+    {
+        "id": "258e1d5a.b26f12",
+        "type": "MySQLdatabase",
+        "z": "",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "hubitat_logging",
+        "tz": ""
+    }
+]
