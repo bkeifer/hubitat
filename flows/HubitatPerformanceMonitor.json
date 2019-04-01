@@ -1,56 +1,414 @@
 [
     {
-        "id": "7e0e5628.08e328",
-        "type": "tab",
-        "label": "Hubitat Performance Monitoring",
-        "disabled": false,
-        "info": ""
+        "id": "142ad616.fea34a",
+        "type": "subflow",
+        "name": "Log File",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "f1262b6b.6e2c08"
+                    }
+                ]
+            }
+        ],
+        "out": [],
+        "env": []
     },
     {
-        "id": "b20a59e1.a9eb48",
-        "type": "inject",
-        "z": "7e0e5628.08e328",
-        "name": "5 Minutes",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "300",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 128,
-        "y": 160,
+        "id": "f77d0c0.0edbbf8",
+        "type": "switch",
+        "z": "142ad616.fea34a",
+        "name": "Are We Testing?",
+        "property": "test",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 380,
+        "y": 100,
         "wires": [
             [
-                "897fec57.a299c"
+                "3e01daba.438f46"
+            ],
+            [
+                "2c78e43a.f1742c"
             ]
         ]
     },
     {
-        "id": "991b1b0a.7868d8",
+        "id": "3e01daba.438f46",
+        "type": "logger",
+        "z": "142ad616.fea34a",
+        "name": "Test Log",
+        "filename": "/var/log/hubitat/test.json",
+        "maxsize": 1,
+        "maxfiles": 10,
+        "complete": "true",
+        "console": false,
+        "file": true,
+        "debug": false,
+        "zip": false,
+        "logtype": "info",
+        "x": 550,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "2c78e43a.f1742c",
+        "type": "logger",
+        "z": "142ad616.fea34a",
+        "name": "Prod Log",
+        "filename": "/var/log/hubitat/performance.json",
+        "maxsize": 1,
+        "maxfiles": 10,
+        "complete": "true",
+        "console": false,
+        "file": true,
+        "debug": false,
+        "zip": false,
+        "logtype": "info",
+        "x": 550,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "f1262b6b.6e2c08",
+        "type": "function",
+        "z": "142ad616.fea34a",
+        "name": "Inject State",
+        "func": "msg.clears = flow.get(\"$parent.clears\");\nmsg.warnings = flow.get(\"$parent.warnings\");\nmsg.criticals = flow.get(\"$parent.criticals\");\nmsg.lastReboot = flow.get(\"$parent.lastReboot\");\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 200,
+        "y": 100,
+        "wires": [
+            [
+                "f77d0c0.0edbbf8"
+            ]
+        ]
+    },
+    {
+        "id": "42229fb7.968de",
+        "type": "subflow",
+        "name": "Check Time",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "53b3da19.0fd544"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1050,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "60d58742.ff47f8",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": []
+    },
+    {
+        "id": "53b3da19.0fd544",
+        "type": "time-range-switch",
+        "z": "42229fb7.968de",
+        "name": "Am I Awake?",
+        "lat": "40.4966539",
+        "lon": "-75.4408193",
+        "startTime": "08:00",
+        "endTime": "23:00",
+        "startOffset": 0,
+        "endOffset": 0,
+        "x": 180,
+        "y": 100,
+        "wires": [
+            [
+                "92541ffe.5d67c"
+            ],
+            [
+                "b0746d4e.c6893"
+            ]
+        ]
+    },
+    {
+        "id": "a8d19cfa.242bf",
+        "type": "time-range-switch",
+        "z": "42229fb7.968de",
+        "name": "Maintenance Window?",
+        "lat": "40.4966539",
+        "lon": "-75.4408193",
+        "startTime": "02:00",
+        "endTime": "03:00",
+        "startOffset": 0,
+        "endOffset": 0,
+        "x": 550,
+        "y": 100,
+        "wires": [
+            [
+                "8ff2e54f.ad7e98"
+            ],
+            [
+                "621b2c8b.d05f14"
+            ]
+        ]
+    },
+    {
+        "id": "8ff2e54f.ad7e98",
+        "type": "change",
+        "z": "42229fb7.968de",
+        "name": "Yes",
+        "rules": [
+            {
+                "t": "set",
+                "p": "inMaintenance",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 750,
+        "y": 50,
+        "wires": [
+            [
+                "60d58742.ff47f8"
+            ]
+        ]
+    },
+    {
+        "id": "621b2c8b.d05f14",
+        "type": "change",
+        "z": "42229fb7.968de",
+        "name": "No",
+        "rules": [
+            {
+                "t": "set",
+                "p": "inMaintenance",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 750,
+        "y": 150,
+        "wires": [
+            [
+                "60d58742.ff47f8"
+            ]
+        ]
+    },
+    {
+        "id": "92541ffe.5d67c",
+        "type": "change",
+        "z": "42229fb7.968de",
+        "name": "Yes",
+        "rules": [
+            {
+                "t": "set",
+                "p": "awake",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 50,
+        "wires": [
+            [
+                "a8d19cfa.242bf"
+            ]
+        ]
+    },
+    {
+        "id": "b0746d4e.c6893",
+        "type": "change",
+        "z": "42229fb7.968de",
+        "name": "No",
+        "rules": [
+            {
+                "t": "set",
+                "p": "awake",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 150,
+        "wires": [
+            [
+                "a8d19cfa.242bf"
+            ]
+        ]
+    },
+    {
+        "id": "60d58742.ff47f8",
+        "type": "change",
+        "z": "42229fb7.968de",
+        "name": "Adjust Fields",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "headers",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "starttime",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "endtime",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "redirectList",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "responseCookies",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "topic",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "payload",
+                "pt": "msg"
+            },
+            {
+                "t": "set",
+                "p": "reboot",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            },
+            {
+                "t": "delete",
+                "p": "url",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "responseUrl",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 930,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cb61d694.088b08",
+        "type": "subflow",
+        "name": "Check Page",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "ef4d5436.d3f3c8"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1150,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "4d03abd3.d17da4",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": []
+    },
+    {
+        "id": "df829744.a64168",
         "type": "http request",
-        "z": "7e0e5628.08e328",
+        "z": "cb61d694.088b08",
         "name": "Get App List",
         "method": "GET",
         "ret": "bin",
         "paytoqs": false,
-        "url": "http://hub-ip-address/installedapp/list",
+        "url": "",
         "tls": "",
         "proxy": "",
         "authType": "basic",
-        "x": 328.5,
-        "y": 161,
+        "x": 500,
+        "y": 80,
         "wires": [
             [
-                "3bf2ab00.3e0496"
+                "2bae19fe.5123c6"
             ]
         ]
     },
     {
-        "id": "3bf2ab00.3e0496",
+        "id": "2bae19fe.5123c6",
         "type": "change",
-        "z": "7e0e5628.08e328",
-        "name": "Stamp",
+        "z": "cb61d694.088b08",
+        "name": "Add endtime",
         "rules": [
             {
                 "t": "set",
@@ -65,19 +423,19 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 362.5,
-        "y": 204,
+        "x": 670,
+        "y": 80,
         "wires": [
             [
-                "bfa2a61a.9fd0f8"
+                "c41489c8.b725d8"
             ]
         ]
     },
     {
-        "id": "897fec57.a299c",
+        "id": "ef4d5436.d3f3c8",
         "type": "change",
-        "z": "7e0e5628.08e328",
-        "name": "Stamp",
+        "z": "cb61d694.088b08",
+        "name": "Add starttime",
         "rules": [
             {
                 "t": "set",
@@ -92,264 +450,159 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 302.5,
-        "y": 118,
+        "x": 170,
+        "y": 80,
         "wires": [
             [
-                "991b1b0a.7868d8"
+                "1739c812.7e5928"
             ]
         ]
     },
     {
-        "id": "bfa2a61a.9fd0f8",
+        "id": "4d03abd3.d17da4",
         "type": "function",
-        "z": "7e0e5628.08e328",
-        "name": "Stamp Math",
-        "func": "msg.totaltime = msg.endtime - msg.starttime;\nmsg.totaltime = msg.totaltime / 1000\nreturn msg;",
+        "z": "cb61d694.088b08",
+        "name": "Do Math",
+        "func": "msg.responseTime = msg.endtime - msg.starttime;\nmsg.responseTime = msg.responseTime / 1000;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 532.5,
-        "y": 161,
+        "x": 1040,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c41489c8.b725d8",
+        "type": "change",
+        "z": "cb61d694.088b08",
+        "name": "This is not a test.",
+        "rules": [
+            {
+                "t": "set",
+                "p": "test",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 860,
+        "y": 80,
         "wires": [
             [
-                "d040b3cd.6b84d",
-                "4133b019.14e98"
+                "4d03abd3.d17da4"
             ]
         ]
     },
     {
-        "id": "d040b3cd.6b84d",
+        "id": "1739c812.7e5928",
         "type": "function",
-        "z": "7e0e5628.08e328",
+        "z": "cb61d694.088b08",
+        "name": "Build URL",
+        "func": "msg.url = \"http://\" + flow.get(\"$parent.hubIP\") + \"/installedapp/list\"\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 340,
+        "y": 80,
+        "wires": [
+            [
+                "df829744.a64168"
+            ]
+        ]
+    },
+    {
+        "id": "d822b8b4.43e668",
+        "type": "tab",
+        "label": "Hubitat Performance (WWW)",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "9c0e3e5a.3ae79",
+        "type": "inject",
+        "z": "d822b8b4.43e668",
+        "name": "5 mins.",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 100,
+        "y": 60,
+        "wires": [
+            [
+                "19344a02.402556"
+            ]
+        ]
+    },
+    {
+        "id": "f6019add.e242e8",
+        "type": "function",
+        "z": "d822b8b4.43e668",
         "name": "INSERT",
         "func": "var query = \"INSERT INTO responsetimes(deviceId, displayName, `value`) VALUES(\";\nquery += \"1,\";\nquery += \"'Hubitat Elevation Hub',\";\nquery += \"'\" + msg.totaltime + \"'\";\nquery += \")\";\n\nmsg.topic = query;\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 740.5,
-        "y": 161,
+        "x": 360,
+        "y": 90,
         "wires": [
             [
-                "9d582be5.d6bbb8"
+                "c2d79c44.0325a"
             ]
         ]
     },
     {
-        "id": "9d582be5.d6bbb8",
+        "id": "c2d79c44.0325a",
         "type": "mysql",
-        "z": "7e0e5628.08e328",
+        "z": "d822b8b4.43e668",
         "mydb": "258e1d5a.b26f12",
         "name": "Logging DB",
-        "x": 912,
-        "y": 161,
+        "x": 510,
+        "y": 90,
         "wires": [
             []
         ]
     },
     {
-        "id": "4133b019.14e98",
-        "type": "switch",
-        "z": "7e0e5628.08e328",
-        "name": "Response Time",
-        "property": "totaltime",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "lt",
-                "v": "5",
-                "vt": "str"
-            },
-            {
-                "t": "lt",
-                "v": "30",
-                "vt": "str"
-            },
-            {
-                "t": "gte",
-                "v": "30",
-                "vt": "str"
-            }
-        ],
-        "checkall": "false",
-        "repair": false,
-        "outputs": 3,
-        "x": 252.5,
-        "y": 371,
-        "wires": [
-            [
-                "d51fb602.3e1d88"
-            ],
-            [
-                "957065aa.fe91b8"
-            ],
-            [
-                "59fdce33.ca7d4"
-            ]
-        ]
-    },
-    {
-        "id": "9525f293.06e8a",
+        "id": "49472bba.f1b6d4",
         "type": "http request",
-        "z": "7e0e5628.08e328",
+        "z": "d822b8b4.43e668",
         "name": "Reboot Hub",
         "method": "POST",
         "ret": "obj",
         "paytoqs": false,
-        "url": "http://hub-ip-address/hub/reboot",
+        "url": "http://10.13.13.7/hub/reboot",
         "tls": "",
         "proxy": "",
         "authType": "basic",
-        "x": 758.5,
-        "y": 433,
-        "wires": [
-            [
-                "af50aeaa.6ffdd"
-            ]
-        ]
-    },
-    {
-        "id": "d51fb602.3e1d88",
-        "type": "change",
-        "z": "7e0e5628.08e328",
-        "name": "0 - 5 Seconds",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "ALL CLEAR!  Response time less than 5 seconds.",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 447.5,
-        "y": 309,
+        "x": 1310,
+        "y": 570,
         "wires": [
             []
         ]
     },
     {
-        "id": "957065aa.fe91b8",
-        "type": "change",
-        "z": "7e0e5628.08e328",
-        "name": "5 - 30 Seconds",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "WARNING!  Response time between 10 and 30 seconds!",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 448,
-        "y": 371,
-        "wires": [
-            [
-                "af50aeaa.6ffdd"
-            ]
-        ]
-    },
-    {
-        "id": "59fdce33.ca7d4",
-        "type": "change",
-        "z": "7e0e5628.08e328",
-        "name": "30+ Seconds",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "CRITICAL!  Response time greater than 30 seconds!",
-                "tot": "str"
-            },
-            {
-                "t": "delete",
-                "p": "",
-                "pt": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 440,
-        "y": 433,
-        "wires": [
-            [
-                "a3a2bade.bb4b68"
-            ]
-        ]
-    },
-    {
-        "id": "a3a2bade.bb4b68",
-        "type": "delay",
-        "z": "7e0e5628.08e328",
-        "name": "1x/Hour",
-        "pauseType": "rate",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "hour",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": true,
-        "x": 598.5,
-        "y": 433,
-        "wires": [
-            [
-                "9525f293.06e8a"
-            ]
-        ]
-    },
-    {
-        "id": "af50aeaa.6ffdd",
-        "type": "time-range-switch",
-        "z": "7e0e5628.08e328",
-        "name": "Am I Awake?",
-        "lat": "40.4966539",
-        "lon": "-75.4408193",
-        "startTime": "08:00",
-        "endTime": "23:00",
-        "startOffset": 0,
-        "endOffset": 0,
-        "x": 844.5,
-        "y": 371,
-        "wires": [
-            [
-                "757f97ae.c7ecc8"
-            ],
-            [
-                "3a081885.52d208"
-            ]
-        ]
-    },
-    {
-        "id": "d31de04.7a6662",
+        "id": "bed0967.578b768",
         "type": "pushover api",
-        "z": "7e0e5628.08e328",
-        "keys": "",
+        "z": "d822b8b4.43e668",
+        "keys": "2689cdfc.89b932",
         "title": "Hubitat Watchdog",
-        "name": "Send Pushover Alert",
-        "x": 1263.5,
-        "y": 370,
+        "name": "Alert",
+        "x": 1190,
+        "y": 330,
         "wires": []
     },
     {
-        "id": "757f97ae.c7ecc8",
+        "id": "7eb7f24e.53623c",
         "type": "delay",
-        "z": "7e0e5628.08e328",
+        "z": "d822b8b4.43e668",
         "name": "YES: 1x/Hour",
         "pauseType": "rate",
         "timeout": "5",
@@ -361,36 +614,971 @@
         "randomLast": "5",
         "randomUnits": "seconds",
         "drop": true,
-        "x": 1036.5,
-        "y": 352,
+        "x": 900,
+        "y": 290,
         "wires": [
             [
-                "d31de04.7a6662"
+                "3c6f26c1.50704a"
             ]
         ]
     },
     {
-        "id": "3a081885.52d208",
+        "id": "1dcd28d2.120567",
         "type": "delay",
-        "z": "7e0e5628.08e328",
+        "z": "d822b8b4.43e668",
         "name": "NO: Only Once",
         "pauseType": "rate",
         "timeout": "5",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "day",
+        "nbRateUnits": "9",
+        "rateUnits": "hour",
         "randomFirst": "1",
         "randomLast": "5",
         "randomUnits": "seconds",
-        "drop": false,
-        "x": 1036.5,
-        "y": 391,
+        "drop": true,
+        "x": 900,
+        "y": 330,
         "wires": [
             [
-                "d31de04.7a6662"
+                "3c6f26c1.50704a"
             ]
         ]
+    },
+    {
+        "id": "5174d1fc.8cf57",
+        "type": "config",
+        "z": "d822b8b4.43e668",
+        "name": "Configuration",
+        "properties": [
+            {
+                "p": "criticalsForReboot",
+                "pt": "flow",
+                "to": "2",
+                "tot": "num"
+            },
+            {
+                "p": "criticalsForRebootDuringMaintenance",
+                "pt": "flow",
+                "to": "3",
+                "tot": "num"
+            },
+            {
+                "p": "hubIP",
+                "pt": "flow",
+                "to": "10.13.13.7",
+                "tot": "str"
+            },
+            {
+                "p": "thresholdWarning",
+                "pt": "flow",
+                "to": "5",
+                "tot": "num"
+            },
+            {
+                "p": "thresholdCritical",
+                "pt": "flow",
+                "to": "15",
+                "tot": "num"
+            }
+        ],
+        "active": true,
+        "x": 120,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "c9ae4bf4.9514c8",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "Log Auto Reboot",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CRITICAL!  Rebooting Hub!",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "rebootType",
+                "pt": "msg",
+                "to": "automatic",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 510,
+        "wires": [
+            [
+                "3074131.32002ec"
+            ]
+        ]
+    },
+    {
+        "id": "648e1b85.bfc724",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Crit",
+        "func": "flow.set(\"criticals\", flow.get(\"criticals\") + 1);\nmsg.severity = \"crit\";\nmsg.payload = \"Response time above CRITICAL threshold.\";\n\nif (msg.inMaintenance) {\n    msg.critsNeeded = flow.get(\"criticalsForRebootDuringMaintenance\");\n} else {\n    msg.critsNeeded = flow.get(\"criticalsForReboot\");\n}\n\nif (flow.get(\"criticals\") >= msg.critsNeeded) {\n    msg.reboot = true;\n    flow.set(\"lastReboot\", Date.now());\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 500,
+        "y": 350,
+        "wires": [
+            [
+                "c9ae4bf4.9514c8",
+                "4440bc9.ee30344",
+                "98beb44d.16dd08"
+            ]
+        ]
+    },
+    {
+        "id": "568d82c5.60ae7c",
+        "type": "switch",
+        "z": "d822b8b4.43e668",
+        "name": "Severity",
+        "property": "responseTime",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "lt",
+                "v": "thresholdWarning",
+                "vt": "flow"
+            },
+            {
+                "t": "lt",
+                "v": "thresholdCritical",
+                "vt": "flow"
+            },
+            {
+                "t": "gte",
+                "v": "thresholdCritical",
+                "vt": "flow"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 360,
+        "y": 310,
+        "wires": [
+            [
+                "5d7bbaf1.0ec3d4"
+            ],
+            [
+                "77092e5b.5e53b"
+            ],
+            [
+                "648e1b85.bfc724"
+            ]
+        ]
+    },
+    {
+        "id": "6adcdee9.73092",
+        "type": "inject",
+        "z": "d822b8b4.43e668",
+        "name": "Manually Reboot Now",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 140,
+        "y": 570,
+        "wires": [
+            [
+                "ec8d425c.87f28"
+            ]
+        ]
+    },
+    {
+        "id": "19344a02.402556",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Initialize",
+        "func": "if (typeof flow.get(\"criticals\") == 'undefined') {\n    flow.set(\"criticals\", 0);\n}\nif (typeof flow.get(\"warnings\") == 'undefined') {\n    flow.set(\"warnings\", 0);\n}\nif (typeof flow.get(\"clears\") == 'undefined') {\n    flow.set(\"clears\", 0);\n}\nflow.set(\"lastRun\", new Date());\n//flow.set(\"criticalsForReboot\", 2);\n//flow.set(\"criticalsForRebootDuringMaintenance\", 3);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 100,
+        "y": 100,
+        "wires": [
+            [
+                "7d41b900.b782b8"
+            ]
+        ]
+    },
+    {
+        "id": "77092e5b.5e53b",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Warn",
+        "func": "flow.set(\"warnings\", flow.get(\"warnings\") + 1);\nmsg.severity = \"warn\";\nmsg.payload = \"Response time above warning threshold.\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 500,
+        "y": 310,
+        "wires": [
+            [
+                "15bf4553.5cee7b",
+                "98beb44d.16dd08"
+            ]
+        ]
+    },
+    {
+        "id": "ec8d425c.87f28",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "Log Manual Reboot",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "MANUALLY REBOOTING HUB",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "rebootType",
+                "pt": "msg",
+                "to": "manual",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 570,
+        "wires": [
+            [
+                "3074131.32002ec"
+            ]
+        ]
+    },
+    {
+        "id": "760f49b7.d09078",
+        "type": "inject",
+        "z": "d822b8b4.43e668",
+        "name": "OK",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 90,
+        "y": 420,
+        "wires": [
+            [
+                "ea7c78d7.af7bd8"
+            ]
+        ]
+    },
+    {
+        "id": "bdf30810.2e86b8",
+        "type": "inject",
+        "z": "d822b8b4.43e668",
+        "name": "Warn",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 90,
+        "y": 450,
+        "wires": [
+            [
+                "360c2634.ee47ba"
+            ]
+        ]
+    },
+    {
+        "id": "6a2a15eb.c6169c",
+        "type": "inject",
+        "z": "d822b8b4.43e668",
+        "name": "Critical",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 90,
+        "y": 480,
+        "wires": [
+            [
+                "ca570818.499ec8"
+            ]
+        ]
+    },
+    {
+        "id": "ea7c78d7.af7bd8",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "responseTime",
+                "pt": "msg",
+                "to": "$flowContext('thresholdWarning') / 2",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 165,
+        "y": 420,
+        "wires": [
+            [
+                "6c6e1169.7e434"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "360c2634.ee47ba",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "responseTime",
+                "pt": "msg",
+                "to": "($flowContext('thresholdWarning') + $flowContext('thresholdCritical')) / 2",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 165,
+        "y": 450,
+        "wires": [
+            [
+                "6c6e1169.7e434"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "ca570818.499ec8",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "responseTime",
+                "pt": "msg",
+                "to": "$flowContext('thresholdCritical')",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 165,
+        "y": 480,
+        "wires": [
+            [
+                "6c6e1169.7e434"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "7d41b900.b782b8",
+        "type": "subflow:cb61d694.088b08",
+        "z": "d822b8b4.43e668",
+        "name": "Check Page",
+        "env": [],
+        "x": 110,
+        "y": 140,
+        "wires": [
+            [
+                "f6019add.e242e8",
+                "99215c4.a5908a"
+            ]
+        ]
+    },
+    {
+        "id": "99215c4.a5908a",
+        "type": "subflow:42229fb7.968de",
+        "z": "d822b8b4.43e668",
+        "name": "Check Time",
+        "env": [],
+        "x": 160,
+        "y": 180,
+        "wires": [
+            [
+                "568d82c5.60ae7c",
+                "386688e0.defed8"
+            ]
+        ]
+    },
+    {
+        "id": "b49784f1.3271a8",
+        "type": "comment",
+        "z": "d822b8b4.43e668",
+        "name": "Test Injects",
+        "info": "",
+        "x": 80,
+        "y": 390,
+        "wires": []
+    },
+    {
+        "id": "5d7bbaf1.0ec3d4",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Info",
+        "func": "flow.set(\"warnings\", 0);\nflow.set(\"criticals\", 0);\nmsg.severity = \"info\";\nmsg.payload = \"All Clear\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 500,
+        "y": 270,
+        "wires": [
+            [
+                "98beb44d.16dd08"
+            ]
+        ]
+    },
+    {
+        "id": "a1cfbfca.0e2e8",
+        "type": "inject",
+        "z": "d822b8b4.43e668",
+        "name": "Simulate Hub Reboot",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 430,
+        "y": 630,
+        "wires": [
+            [
+                "aada01f7.7d55d"
+            ]
+        ]
+    },
+    {
+        "id": "6c6e1169.7e434",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "Init",
+        "rules": [
+            {
+                "t": "set",
+                "p": "test",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            },
+            {
+                "t": "set",
+                "p": "reboot",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            },
+            {
+                "t": "set",
+                "p": "inMaintenance",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            },
+            {
+                "t": "set",
+                "p": "awake",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 215,
+        "y": 450,
+        "wires": [
+            [
+                "568d82c5.60ae7c"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "15bf4553.5cee7b",
+        "type": "switch",
+        "z": "d822b8b4.43e668",
+        "name": "Awake?",
+        "property": "awake",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 690,
+        "y": 310,
+        "wires": [
+            [
+                "7eb7f24e.53623c"
+            ],
+            [
+                "1dcd28d2.120567"
+            ]
+        ]
+    },
+    {
+        "id": "7a13eed2.61ae4",
+        "type": "delay",
+        "z": "d822b8b4.43e668",
+        "name": "YES: 1x/Hour",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "hour",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 900,
+        "y": 390,
+        "wires": [
+            [
+                "3c6f26c1.50704a"
+            ]
+        ]
+    },
+    {
+        "id": "2ce3fc9d.32c8b4",
+        "type": "delay",
+        "z": "d822b8b4.43e668",
+        "name": "NO: Only Once",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "9",
+        "rateUnits": "hour",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 900,
+        "y": 430,
+        "wires": [
+            [
+                "3c6f26c1.50704a"
+            ]
+        ]
+    },
+    {
+        "id": "aada01f7.7d55d",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "Log Reboot Sim.",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "CRITICAL!  Simulating Hub Rebooting!",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "test",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 630,
+        "wires": [
+            [
+                "3074131.32002ec"
+            ]
+        ]
+    },
+    {
+        "id": "c8e87d83.bc3d8",
+        "type": "subflow:142ad616.fea34a",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "env": [],
+        "x": 990,
+        "y": 610,
+        "wires": []
+    },
+    {
+        "id": "c70a3fde.be171",
+        "type": "subflow:142ad616.fea34a",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "env": [],
+        "x": 1380,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "8a744562.df4288",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "Log Sent Alert",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Alert sent!",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1220,
+        "y": 380,
+        "wires": [
+            [
+                "c70a3fde.be171"
+            ]
+        ]
+    },
+    {
+        "id": "3c6f26c1.50704a",
+        "type": "no-op",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "x": 1075,
+        "y": 360,
+        "wires": [
+            [
+                "bed0967.578b768",
+                "8a744562.df4288"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "3074131.32002ec",
+        "type": "no-op",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "x": 875,
+        "y": 570,
+        "wires": [
+            [
+                "c8e87d83.bc3d8",
+                "641e96bd.e33688",
+                "f0c10fe0.4b1ca"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "1594a0d7.8551cf",
+        "type": "comment",
+        "z": "d822b8b4.43e668",
+        "name": "Log to datastore(s)",
+        "info": "",
+        "x": 680,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "c87b97c1.968da8",
+        "type": "delay",
+        "z": "d822b8b4.43e668",
+        "name": "1/hr",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "hour",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 1150,
+        "y": 570,
+        "wires": [
+            [
+                "49472bba.f1b6d4",
+                "b6211665.f63d88",
+                "8a435a4b.f38838"
+            ]
+        ]
+    },
+    {
+        "id": "b6211665.f63d88",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "INSERT",
+        "func": "var query = \"INSERT INTO reboottimes(displayName, `type`) VALUES(\";\nquery += \"'Hub Reboot',\";\nquery += \"'\" + msg.rebootType + \"'\";\nquery += \")\";\n\nmsg.topic = query;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1300,
+        "y": 610,
+        "wires": [
+            [
+                "1260d4c7.9e328b"
+            ]
+        ]
+    },
+    {
+        "id": "1260d4c7.9e328b",
+        "type": "mysql",
+        "z": "d822b8b4.43e668",
+        "mydb": "258e1d5a.b26f12",
+        "name": "Logging DB",
+        "x": 1450,
+        "y": 610,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4440bc9.ee30344",
+        "type": "switch",
+        "z": "d822b8b4.43e668",
+        "name": "Awake?",
+        "property": "awake",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 690,
+        "y": 410,
+        "wires": [
+            [
+                "7a13eed2.61ae4"
+            ],
+            [
+                "2ce3fc9d.32c8b4"
+            ]
+        ]
+    },
+    {
+        "id": "8a435a4b.f38838",
+        "type": "pushover api",
+        "z": "d822b8b4.43e668",
+        "keys": "2689cdfc.89b932",
+        "title": "Hubitat Watchdog",
+        "name": "Alert",
+        "x": 1290,
+        "y": 530,
+        "wires": []
+    },
+    {
+        "id": "641e96bd.e33688",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Not Testing?",
+        "func": "if (msg.test) {\n    return null;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1000,
+        "y": 570,
+        "wires": [
+            [
+                "c87b97c1.968da8"
+            ]
+        ]
+    },
+    {
+        "id": "f0c10fe0.4b1ca",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Testing?",
+        "func": "if (msg.test) {\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 990,
+        "y": 530,
+        "wires": [
+            [
+                "8a435a4b.f38838"
+            ]
+        ]
+    },
+    {
+        "id": "c81ac522.ecbae8",
+        "type": "function",
+        "z": "d822b8b4.43e668",
+        "name": "Set Influx Data",
+        "func": "var v = {\n    'value' : Number(msg.value),\n    'isBinary' : false\n};\n\nmsg.payload = [\n    {\n        measurement: msg.name,\n        fields: {\n            value: v.value,\n        },\n        tags:{\n            hub: msg.hubId ? msg.hubId : \"HE1\",\n            deviceId: msg.deviceId,\n            displayName: msg.displayName,\n            unit: msg.unit\n        },\n        timestamp: new Date()\n    }\n]\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 560,
+        "y": 140,
+        "wires": [
+            [
+                "cfc9aab7.d46768"
+            ]
+        ]
+    },
+    {
+        "id": "cfc9aab7.d46768",
+        "type": "influxdb batch",
+        "z": "d822b8b4.43e668",
+        "influxdb": "41e298f4.276c58",
+        "precision": "",
+        "retentionPolicy": "",
+        "name": "",
+        "x": 750,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "386688e0.defed8",
+        "type": "change",
+        "z": "d822b8b4.43e668",
+        "name": "Format",
+        "rules": [
+            {
+                "t": "set",
+                "p": "name",
+                "pt": "msg",
+                "to": "responseTime",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "value",
+                "pt": "msg",
+                "to": "responseTime",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "deviceId",
+                "pt": "msg",
+                "to": "1",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "displayName",
+                "pt": "msg",
+                "to": "Hubitat Apps Page",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 400,
+        "y": 140,
+        "wires": [
+            [
+                "c81ac522.ecbae8"
+            ]
+        ]
+    },
+    {
+        "id": "79b603e3.c55e9c",
+        "type": "config",
+        "z": "d822b8b4.43e668",
+        "name": "Initial State - Do Not Edit",
+        "properties": [
+            {
+                "p": "clears",
+                "pt": "flow",
+                "to": "0",
+                "tot": "num"
+            },
+            {
+                "p": "warnings",
+                "pt": "flow",
+                "to": "0",
+                "tot": "num"
+            },
+            {
+                "p": "criticals",
+                "pt": "flow",
+                "to": "0",
+                "tot": "num"
+            },
+            {
+                "p": "lastReboot",
+                "pt": "flow",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "active": true,
+        "x": 360,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "98beb44d.16dd08",
+        "type": "subflow:142ad616.fea34a",
+        "z": "d822b8b4.43e668",
+        "name": "",
+        "env": [],
+        "x": 690,
+        "y": 210,
+        "wires": []
     },
     {
         "id": "258e1d5a.b26f12",
@@ -400,5 +1588,23 @@
         "port": "3306",
         "db": "hubitat_logging",
         "tz": ""
+    },
+    {
+        "id": "2689cdfc.89b932",
+        "type": "pushover-keys",
+        "z": "",
+        "name": ""
+    },
+    {
+        "id": "41e298f4.276c58",
+        "type": "influxdb",
+        "z": "",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "hubitat",
+        "name": "InfluxDB - hubitat",
+        "usetls": false,
+        "tls": ""
     }
 ]
