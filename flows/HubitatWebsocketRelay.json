@@ -1,0 +1,167 @@
+[{
+	"id": "cadd3106.3ec1d",
+	"type": "tab",
+	"label": "Hubitat Websocket Relay",
+	"disabled": false,
+	"info": ""
+}, {
+	"id": "f7d93ba1.933908",
+	"type": "change",
+	"z": "cadd3106.3ec1d",
+	"name": "Delete _session",
+	"rules": [{
+		"t": "delete",
+		"p": "_session",
+		"pt": "msg"
+	}],
+	"action": "",
+	"property": "",
+	"from": "",
+	"to": "",
+	"reg": false,
+	"x": 540,
+	"y": 120,
+	"wires": [
+		["629a9bb6.cd6874"]
+	]
+}, {
+	"id": "83c256a9.1e6db8",
+	"type": "change",
+	"z": "cadd3106.3ec1d",
+	"name": "Tag as Event",
+	"rules": [{
+		"t": "set",
+		"p": "type",
+		"pt": "msg",
+		"to": "event",
+		"tot": "str"
+	}],
+	"action": "",
+	"property": "",
+	"from": "",
+	"to": "",
+	"reg": false,
+	"x": 350,
+	"y": 100,
+	"wires": [
+		["f7d93ba1.933908"]
+	]
+}, {
+	"id": "5db51fd.0295fe",
+	"type": "change",
+	"z": "cadd3106.3ec1d",
+	"name": "Tag as Log",
+	"rules": [{
+		"t": "set",
+		"p": "type",
+		"pt": "msg",
+		"to": "log",
+		"tot": "str"
+	}],
+	"action": "",
+	"property": "",
+	"from": "",
+	"to": "",
+	"reg": false,
+	"x": 350,
+	"y": 140,
+	"wires": [
+		["f7d93ba1.933908"]
+	]
+}, {
+	"id": "1c674dbd.ba5632",
+	"type": "websocket out",
+	"z": "cadd3106.3ec1d",
+	"name": "Hubitat Event Socket Relay",
+	"server": "b1d28787.019578",
+	"client": "",
+	"x": 920,
+	"y": 80,
+	"wires": []
+}, {
+	"id": "629a9bb6.cd6874",
+	"type": "switch",
+	"z": "cadd3106.3ec1d",
+	"name": "Type?",
+	"property": "type",
+	"propertyType": "msg",
+	"rules": [{
+		"t": "eq",
+		"v": "event",
+		"vt": "str"
+	}, {
+		"t": "eq",
+		"v": "log",
+		"vt": "str"
+	}],
+	"checkall": "true",
+	"repair": false,
+	"outputs": 2,
+	"x": 710,
+	"y": 120,
+	"wires": [
+		["1c674dbd.ba5632"],
+		["3b6f8daa.3f9e32"]
+	],
+	"outputLabels": ["Event", "Log"]
+}, {
+	"id": "344465e1.89488a",
+	"type": "websocket in",
+	"z": "cadd3106.3ec1d",
+	"name": "Hubitat Events Websocket",
+	"server": "",
+	"client": "eb5fc557.dde3d8",
+	"x": 130,
+	"y": 70,
+	"wires": [
+		["83c256a9.1e6db8"]
+	]
+}, {
+	"id": "f71dc7d8.6c6748",
+	"type": "websocket in",
+	"z": "cadd3106.3ec1d",
+	"name": "Hubitat Logs Websocket",
+	"server": "",
+	"client": "623f4472.02184c",
+	"x": 130,
+	"y": 170,
+	"wires": [
+		["5db51fd.0295fe"]
+	]
+}, {
+	"id": "3b6f8daa.3f9e32",
+	"type": "websocket out",
+	"z": "cadd3106.3ec1d",
+	"name": "Hubitat Log Socket Relay",
+	"server": "3e1793a8.491ebc",
+	"client": "",
+	"x": 910,
+	"y": 160,
+	"wires": []
+}, {
+	"id": "b1d28787.019578",
+	"type": "websocket-listener",
+	"z": "",
+	"path": "/hubitat-eventsocket",
+	"wholemsg": "true"
+}, {
+	"id": "eb5fc557.dde3d8",
+	"type": "websocket-client",
+	"z": "",
+	"path": "ws://10.13.13.7/eventsocket",
+	"tls": "",
+	"wholemsg": "true"
+}, {
+	"id": "623f4472.02184c",
+	"type": "websocket-client",
+	"z": "",
+	"path": "ws://10.13.13.7/logsocket",
+	"tls": "",
+	"wholemsg": "true"
+}, {
+	"id": "3e1793a8.491ebc",
+	"type": "websocket-listener",
+	"z": "",
+	"path": "/hubitat-logsocket",
+	"wholemsg": "true"
+}]

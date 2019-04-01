@@ -1,0 +1,83 @@
+[{
+	"id": "e1738053.9c9c6",
+	"type": "tab",
+	"label": "Hubitat Backups",
+	"disabled": false,
+	"info": ""
+}, {
+	"id": "8fd67f43.5469c",
+	"type": "inject",
+	"z": "e1738053.9c9c6",
+	"name": "04:00 Daily",
+	"topic": "",
+	"payload": "",
+	"payloadType": "date",
+	"repeat": "",
+	"crontab": "00 04 * * *",
+	"once": false,
+	"onceDelay": 0.1,
+	"x": 120,
+	"y": 60,
+	"wires": [
+		["fafcca95.263a28"]
+	]
+}, {
+	"id": "fafcca95.263a28",
+	"type": "http request",
+	"z": "e1738053.9c9c6",
+	"name": "Download Backup",
+	"method": "GET",
+	"ret": "bin",
+	"paytoqs": false,
+	"url": "http://10.13.13.7/hub/backupDB?fileName=latest",
+	"tls": "",
+	"proxy": "",
+	"authType": "basic",
+	"x": 320,
+	"y": 60,
+	"wires": [
+		["ce3dad1a.55002"]
+	]
+}, {
+	"id": "ce3dad1a.55002",
+	"type": "string",
+	"z": "e1738053.9c9c6",
+	"name": "Get Filename",
+	"methods": [{
+		"name": "strip",
+		"params": [{
+			"type": "str",
+			"value": "attachment; filename="
+		}]
+	}, {
+		"name": "prepend",
+		"params": [{
+			"type": "flow",
+			"value": "backupDirectory"
+		}]
+	}],
+	"prop": "headers.content-disposition",
+	"propout": "filename",
+	"object": "msg",
+	"objectout": "msg",
+	"x": 520,
+	"y": 60,
+	"wires": [
+		["e4e02021.0c0c5"]
+	]
+}, {
+	"id": "e4e02021.0c0c5",
+	"type": "file",
+	"z": "e1738053.9c9c6",
+	"name": "Save Backup to File",
+	"filename": "",
+	"appendNewline": false,
+	"createDir": true,
+	"overwriteFile": "true",
+	"encoding": "none",
+	"x": 730,
+	"y": 60,
+	"wires": [
+		[]
+	]
+}]
