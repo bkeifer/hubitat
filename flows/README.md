@@ -9,3 +9,4 @@ No warranty is offered, neither expressed nor implied.  Use of the flows contain
 | HubitatBackups.json            | Periodically download a copy of the latest hub backup for safe-keeping |
 | HubitatPerformanceMonitor.json | Monitors a Hubitat Elevation hub's response time via requests to the App List page |
 | HubitatWebsocketRelay.json     | Proxy the websockets from the hub to a pair of local endpoints to reduce potential hub load |
+| InfluxDBRefresh.json           | Periodically inject fresh data into InfluxDB for temp/humidity/battery measurements that don't change very often |

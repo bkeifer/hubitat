@@ -1,0 +1,352 @@
+[
+    {
+        "id": "2c6a0b95.b3d5e4",
+        "type": "tab",
+        "label": "InfluxDB Refresh",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "67cdc608.4ceb78",
+        "type": "websocket in",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Events",
+        "server": "",
+        "client": "eb5fc557.dde3d8",
+        "x": 80,
+        "y": 50,
+        "wires": [
+            [
+                "eb59c2c0.b5aa4"
+            ]
+        ]
+    },
+    {
+        "id": "9e0837a.a9052c8",
+        "type": "filter",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Filter",
+        "property": "name",
+        "propertyType": "msg",
+        "asArray": false,
+        "itemProperty": "",
+        "itemPropertyType": "item",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "temperature",
+                "vt": "str",
+                "output": 1
+            },
+            {
+                "t": "eq",
+                "v": "humidity",
+                "vt": "str",
+                "output": 1
+            },
+            {
+                "t": "eq",
+                "v": "battery",
+                "vt": "str",
+                "output": 1
+            }
+        ],
+        "checkall": "false",
+        "outputs": 1,
+        "x": 400,
+        "y": 50,
+        "wires": [
+            [
+                "4a0ffe35.8902b"
+            ]
+        ]
+    },
+    {
+        "id": "4a0ffe35.8902b",
+        "type": "function",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Update State",
+        "func": "list = flow.get(\"deviceList\");\ndevID = msg.deviceId;\n\nif (!list[devID]) {\n    list[devID] = {};\n}\n\nlist[devID][\"displayName\"] = msg.displayName;\n\nif (!list[devID][msg.name]) {\n    list[devID][msg.name] = {};\n}\n\nlist[devID][msg.name][\"value\"] = msg.value;\nlist[devID][msg.name][\"stamp\"] = new Date();\n\nflow.set(\"deviceList\", list);\n\nmsg.payload = list;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 550,
+        "y": 50,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "eb59c2c0.b5aa4",
+        "type": "function",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Initialize State",
+        "func": "if (!flow.get(\"deviceList\")) {\n    flow.set(\"deviceList\", [])\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 240,
+        "y": 50,
+        "wires": [
+            [
+                "9e0837a.a9052c8"
+            ]
+        ]
+    },
+    {
+        "id": "3b8cff91.5e44f",
+        "type": "inject",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "5 Minutes",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 100,
+        "y": 200,
+        "wires": [
+            [
+                "b05c6ea9.58fe1",
+                "c515a24.3b0fc6",
+                "f5011e9.52e0ae"
+            ]
+        ]
+    },
+    {
+        "id": "f2fa120d.8774d",
+        "type": "debug",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 330,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "9d0b4081.202d8",
+        "type": "function",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Find Stale Data",
+        "func": "now = new Date();\n\nupdates = [];\npoints = msg.payload;\n\npoints.forEach(point => {\n    delta = ((now - point[\"time\"]) / 60000)\n\n    if (delta > 30) {\n        update = {\n            measurement: \"temperature\",\n            fields: {\n                value: point.value\n            },\n            tags:{\n                hub: msg.hubId ? msg.hubId : \"HE1\",\n                deviceId: parseInt(point.deviceId),\n                displayName: point.displayName,\n                unit: point.unit,\n                synthetic: true\n            },\n            delta: delta,\n            timestamp: new Date()\n        };\n        \n        updates.push(update);\n    }\n});\n\nmsg.payload = updates;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 850,
+        "y": 200,
+        "wires": [
+            [
+                "42b97eb6.5f2db"
+            ]
+        ]
+    },
+    {
+        "id": "6c91a233.165f3c",
+        "type": "influxdb in",
+        "z": "2c6a0b95.b3d5e4",
+        "influxdb": "41e298f4.276c58",
+        "name": "Get Latest Data",
+        "query": "",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "x": 660,
+        "y": 200,
+        "wires": [
+            [
+                "9d0b4081.202d8"
+            ]
+        ]
+    },
+    {
+        "id": "42b97eb6.5f2db",
+        "type": "influxdb batch",
+        "z": "2c6a0b95.b3d5e4",
+        "influxdb": "41e298f4.276c58",
+        "precision": "",
+        "retentionPolicy": "",
+        "name": "Update InfluxDB",
+        "x": 1040,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "b1c35e67.2f378",
+        "type": "inject",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Dump State Array",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 120,
+        "y": 380,
+        "wires": [
+            [
+                "7e9e51a7.44377"
+            ]
+        ]
+    },
+    {
+        "id": "7e9e51a7.44377",
+        "type": "change",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "deviceList",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "deviceList",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 245,
+        "y": 380,
+        "wires": [
+            [
+                "f2fa120d.8774d"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "b05c6ea9.58fe1",
+        "type": "change",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Humidity",
+        "rules": [
+            {
+                "t": "set",
+                "p": "measurement",
+                "pt": "msg",
+                "to": "humidity",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 160,
+        "wires": [
+            [
+                "b13db8f.fab8148"
+            ]
+        ]
+    },
+    {
+        "id": "c515a24.3b0fc6",
+        "type": "change",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Temperature",
+        "rules": [
+            {
+                "t": "set",
+                "p": "measurement",
+                "pt": "msg",
+                "to": "temperature",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 200,
+        "wires": [
+            [
+                "b13db8f.fab8148"
+            ]
+        ]
+    },
+    {
+        "id": "b13db8f.fab8148",
+        "type": "function",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Build InfluxQL",
+        "func": "msg.query  = 'SELECT \"deviceId\", last(\"value\") AS \"value\", unit ';\nmsg.query += 'FROM \"hubitat\".\"autogen\".\"' + msg.measurement + '\" ';\nmsg.query += 'GROUP BY displayName';\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 470,
+        "y": 200,
+        "wires": [
+            [
+                "6c91a233.165f3c"
+            ]
+        ]
+    },
+    {
+        "id": "2e2fe445.d03f9c",
+        "type": "comment",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Shows contents of state array of devices in the debug console",
+        "info": "",
+        "x": 220,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "f5011e9.52e0ae",
+        "type": "change",
+        "z": "2c6a0b95.b3d5e4",
+        "name": "Battery",
+        "rules": [
+            {
+                "t": "set",
+                "p": "measurement",
+                "pt": "msg",
+                "to": "battery",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 240,
+        "wires": [
+            [
+                "b13db8f.fab8148"
+            ]
+        ]
+    },
+    {
+        "id": "eb5fc557.dde3d8",
+        "type": "websocket-client",
+        "z": "",
+        "path": "ws://10.13.13.7/eventsocket",
+        "tls": "",
+        "wholemsg": "true"
+    },
+    {
+        "id": "41e298f4.276c58",
+        "type": "influxdb",
+        "z": "",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "hubitat",
+        "name": "InfluxDB - hubitat",
+        "usetls": false,
+        "tls": ""
+    }
+]
