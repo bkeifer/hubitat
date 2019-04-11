@@ -107,8 +107,8 @@
         "y": 200,
         "wires": [
             [
-                "b05c6ea9.58fe1",
                 "c515a24.3b0fc6",
+                "b05c6ea9.58fe1",
                 "f5011e9.52e0ae"
             ]
         ]
@@ -133,7 +133,7 @@
         "type": "function",
         "z": "2c6a0b95.b3d5e4",
         "name": "Find Stale Data",
-        "func": "now = new Date();\n\nupdates = [];\npoints = msg.payload;\n\npoints.forEach(point => {\n    delta = ((now - point[\"time\"]) / 60000)\n\n    if (delta > 30) {\n        update = {\n            measurement: \"temperature\",\n            fields: {\n                value: point.value\n            },\n            tags:{\n                hub: msg.hubId ? msg.hubId : \"HE1\",\n                deviceId: parseInt(point.deviceId),\n                displayName: point.displayName,\n                unit: point.unit,\n                synthetic: true\n            },\n            delta: delta,\n            timestamp: new Date()\n        };\n        \n        updates.push(update);\n    }\n});\n\nmsg.payload = updates;\n\nreturn msg;",
+        "func": "now = new Date();\nstate = flow.get(\"deviceList\");\n\nupdates = [];\nmsg.points = msg.payload;\npoints = msg.payload;\n\npoints.forEach(point => {\n    delta = ((now - point[\"time\"]) / 60000)\n\n    if (delta > 15) {\n        update = {\n            measurement: msg.measurement,\n            fields: {\n                // value: state[parseInt(point.deviceId)][]\n                value: point.value\n            },\n            tags:{\n                hub: msg.hubId ? msg.hubId : \"HE1\",\n                deviceId: parseInt(point.deviceId),\n                displayName: point.displayName,\n                unit: point.unit,\n                synthetic: true\n            },\n            delta: delta,\n            timestamp: new Date()\n        };\n        \n        updates.push(update);\n    }\n});\n\nmsg.payload = updates;\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 850,
@@ -141,24 +141,6 @@
         "wires": [
             [
                 "42b97eb6.5f2db"
-            ]
-        ]
-    },
-    {
-        "id": "6c91a233.165f3c",
-        "type": "influxdb in",
-        "z": "2c6a0b95.b3d5e4",
-        "influxdb": "41e298f4.276c58",
-        "name": "Get Latest Data",
-        "query": "",
-        "rawOutput": false,
-        "precision": "",
-        "retentionPolicy": "",
-        "x": 660,
-        "y": 200,
-        "wires": [
-            [
-                "9d0b4081.202d8"
             ]
         ]
     },
@@ -288,7 +270,7 @@
         "y": 200,
         "wires": [
             [
-                "6c91a233.165f3c"
+                "22df216f.f02dfe"
             ]
         ]
     },
@@ -326,6 +308,24 @@
         "wires": [
             [
                 "b13db8f.fab8148"
+            ]
+        ]
+    },
+    {
+        "id": "22df216f.f02dfe",
+        "type": "influxdb in",
+        "z": "2c6a0b95.b3d5e4",
+        "influxdb": "41e298f4.276c58",
+        "name": "Get Latest Data",
+        "query": "",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "x": 660,
+        "y": 200,
+        "wires": [
+            [
+                "9d0b4081.202d8"
             ]
         ]
     },
