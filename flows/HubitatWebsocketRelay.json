@@ -219,13 +219,13 @@
          {  
             "p":"maxLogAge",
             "pt":"flow",
-            "to":"3",
+            "to":"300",
             "tot":"num"
          },
          {  
             "p":"maxEventAge",
             "pt":"flow",
-            "to":"3",
+            "to":"300",
             "tot":"num"
          }
       ],
