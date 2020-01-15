@@ -19,6 +19,7 @@ definition(
     namespace: "bkeifer",
     author: "Brian Keifer",
     description: "Use one (or more) Hue lights to warn you about bad things happening.",
+    importUrl: "https://raw.githubusercontent.com/bkeifer/hubitat/master/apps/ShitHappens/ShitHappens.groovy",
     iconUrl: "",
     iconX2Url: "",
     iconX3Url: ""
