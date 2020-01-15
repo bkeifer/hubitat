@@ -127,10 +127,10 @@ def initialize() {
 
 def createSchedule() {
 	unschedule()
-    checkAll()
-    getForecast()
-    runEvery5Minutes(checkAll)
-    runEvery15Minutes(getForecast)
+    checkLocal()
+    checkLowTemp()
+    runEvery5Minutes(checkLocal)
+    runEvery15Minutes(checkLowTemp)
 }
 
 
@@ -172,7 +172,7 @@ def calendarResetHandler(evt) {
     log.trace("calendarResetHandler")
     state.dogmeds = now()
     state.alerts["dogmeds"] = false
-    checkAll()
+    checkLocal()
 }
 
 def flash(color) {
@@ -287,58 +287,53 @@ def turnOnToColor(color, delay = 0) {
 }
 
 
-def getLowTemp() {
+def checkLowTemp() {
     def params = [
-    uri: "https://api.forecast.io",
-    path: "/forecast/${apikey}/40.496754,-75.438682"
+        uri: "https://api.forecast.io",
+        path: "/forecast/${apikey}/40.496754,-75.438682"
     ]
+
+    log.trace("checkLowTemp()")
+    asynchttpGet('processLowTemp', params)
+}
+
+
+def processLowTemp(response, data) {
+    log.trace("processLowTemp()")
     int lowForecast = 1000  // Ow!
 
-    try {
-        httpGet(params) { resp ->
-            if (resp.data) {
-                //log.debug "Response Data = ${resp.data}"
-                //log.debug "Response Status = ${resp.status}"
+    response.getJson().each {
+        if (it.key == "hourly") {
+            def x = it.value
+            x.each { xkey ->
+                if (xkey.key == "data") {
+                    def y = xkey.value
+                    def templist = y["temperature"]
+                    def timelist = y["time"]
 
-                // resp.headers.each {
-                //     log.debug "header: ${it.name}: ${it.value}"
-                // }
-                resp.getData().each {
-                    if (it.key == "hourly") {
-                        def x = it.value
-                        x.each { xkey ->
-                            if (xkey.key == "data") {
-                                def y = xkey.value
-                                def templist = y["temperature"]
-                                def timelist = y["time"]
-
-                                for (int i = 0; i <= 12; i++) {
-                                    if ( templist[i] < lowForecast) {
-                                        lowForecast = templist[i]
-                                        //log.info("new low: ${templist[i]} at ${new Date( ((long)timelist[i])*1000 ) }")
-                                    }
-                                }
-                            }
+                    for (int i = 0; i <= 12; i++) {
+                        if ( templist[i] < lowForecast) {
+                            lowForecast = templist[i]
+                            log.info("new low: ${templist[i]} at ${new Date( ((long)timelist[i])*1000 ) }")
                         }
                     }
                 }
             }
-            if(resp.status == 200) {
-                log.debug "getLowTemp Request was OK"
-            } else {
-                log.error "getLowTemp Request got http status ${resp.status}"
-            }
         }
-    } catch(e) {
-        log.debug e
     }
-    return lowForecast
+    if (lowForecast < lowtemp ) {
+        log.debug("Freeze warning found, turning on lights.")
+        state.alerts["freeze"] = true
+    } else {
+        state.alerts["freeze"] = false
+        log.debug("The pipes are safe.  For now...")
+    }
+    log.trace(state)
 }
 
 
-def checkAll() {
-    log.trace("checkAll")
-    checkForFreeze()
+def checkLocal() {
+    log.trace("checkLocal")
     checkDoors()
     checkSwitches()
     checkCalendar()
@@ -359,60 +354,5 @@ def updateHues(delay = 0) {
     } else {
         log.debug("turning off!  delay: ${delay}")
         hues*.off(delay: delay)
-    }
-}
-
-
-def checkForFreeze() {
-    log.trace("checkForFreeze")
-    if (getLowTemp() < lowtemp ) {
-        log.debug("Freeze warning found, turning on lights.")
-        state.alerts["freeze"] = true
-    } else {
-        state.alerts["freeze"] = false
-        log.debug("The pipes are safe.  For now...")
-    }
-    log.trace(state)
-}
-
-
-def getForecast() {
-    def params = [
-        uri: "https://api.forecast.io",
-        path: "/forecast/${apikey}/40.496754,-75.438682"
-    ]
-
-	try {
-        httpGet(params) { resp ->
-            if (resp.data) {
-                //log.debug "Response Data = ${resp.data}"
-                //log.debug "Response Status = ${resp.status}"
-                // resp.headers.each {
-                //     log.debug "header: ${it.name}: ${it.value}"
-                // }
-                resp.getData().each {
-                    if (it.key == "hourly") {
-                        def x = it.value
-                        x.each { xkey ->
-                            if (xkey.key == "data") {
-                                def y = xkey.value
-                                def templist = y["temperature"]
-
-                                for (int i = 0; i <= 48; i++) {
-                                    state.forecast[i] = templist[i]
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if(resp.status == 200) {
-                log.debug "getForecast Request was OK"
-            } else {
-                log.error "getForecast Request got http status ${resp.status}"
-            }
-        }
-    } catch(e) {
-        log.debug e
     }
 }
