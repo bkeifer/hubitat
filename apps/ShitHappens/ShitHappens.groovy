@@ -13,6 +13,7 @@
 *  for the specific language governing permissions and limitations under the License.
 *
 */
+def appVer() { return "0.2" }
 
 definition(
     name: "Shit Happens",
