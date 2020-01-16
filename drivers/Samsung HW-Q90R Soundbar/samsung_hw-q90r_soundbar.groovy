@@ -1,7 +1,7 @@
 def driverVer() { return "0.1" }
 
 metadata {
-    definition (name: "Samsung HW-90Q", namespace: "btk", author: "Brian Keifer", importUrl: "https://raw.githubusercontent.com/bkeifer/hubitat/master/drivers/Samsung%20HW-Q90R%20Soundbar/samsung_hw-q90r_soundbar.groovy") {
+    definition (name: "Samsung HW-Q90R", namespace: "btk", author: "Brian Keifer", importUrl: "https://raw.githubusercontent.com/bkeifer/hubitat/master/drivers/Samsung%20HW-Q90R%20Soundbar/samsung_hw-q90r_soundbar.groovy") {
         capability "Audio Volume"
         capability "Music Player"
 
